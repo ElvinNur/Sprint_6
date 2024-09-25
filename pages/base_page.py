@@ -47,6 +47,11 @@ class BasePage:
     def execute_script(self, script, *args):
         self.driver.execute_script(script, *args)
         
+    @allure.step("Прокрутить страницу до элемента")
+    def scroll_to_element(self, locator):
+        element = self.find_element(locator)
+        self.execute_script("arguments[0].scrollIntoView();", element)
+        
     @allure.step("Ожидать, пока элемент станет кликабельным: {locator}")
     def wait_for_element_to_be_clickable(self, locator):
         try:
@@ -57,9 +62,28 @@ class BasePage:
             self.attach_screenshot("Элемент не кликабелен: {}".format(locator))
             raise
         
+    @allure.step("Переключиться на новую вкладку")
+    def switch_to_new_tab(self):
+        self.driver.switch_to.window(self.driver.window_handles[1])
+
+    @allure.step("Проверить, что текущий URL равен '{expected_url}'")
+    def verify_current_url(self, expected_url):
+        actual_url = self.driver.current_url
+        assert actual_url == expected_url, f"Ожидали URL '{expected_url}', но получили '{actual_url}'"
+
+    @allure.step("Проверить, что текущий URL содержит '{url_fragment}'")
+    def verify_current_url_contains(self, url_fragment):
+        try:
+            WebDriverWait(self.driver, self.timeout).until(
+                EC.url_contains(url_fragment))
+        except TimeoutException:
+            self.attach_screenshot(f"Текущий URL не содержит '{url_fragment}'")
+            raise AssertionError(f"Текущий URL не содержит '{url_fragment}'")
+        
     def attach_screenshot(self, name):
         allure.attach(
             self.driver.get_screenshot_as_png(),
             name=name,
-            attachment_type=allure.attachment_type.PNG
-        )
+            attachment_type=allure.attachment_type.PNG)
+        
+    

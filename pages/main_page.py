@@ -8,8 +8,7 @@ import allure
 class MainPage(BasePage):
     @allure.step("Прокрутить страницу до раздела FAQ")
     def scroll_to_faq_section(self):
-        faq_section = self.find_element(MainPageLocators.FAQ_SECTION)
-        self.execute_script("arguments[0].scrollIntoView();", faq_section)
+        self.scroll_to_element(MainPageLocators.FAQ_SECTION)
 
     @allure.step("Развернуть вопрос: {question_key}")
     def expand_question(self, question_key):
@@ -45,21 +44,3 @@ class MainPage(BasePage):
     @allure.step("Кликнуть по логотипу Яндекса")
     def click_yandex_logo(self):
         self.click_element(MainPageLocators.YANDEX_LOGO)
-
-    @allure.step("Переключиться на новую вкладку")
-    def switch_to_new_tab(self):
-        self.driver.switch_to.window(self.driver.window_handles[1])
-
-    @allure.step("Проверить, что текущий URL равен '{expected_url}'")
-    def verify_current_url(self, expected_url):
-        actual_url = self.driver.current_url
-        assert actual_url == expected_url, f"Ожидали URL '{expected_url}', но получили '{actual_url}'"
-
-    @allure.step("Проверить, что текущий URL содержит '{url_fragment}'")
-    def verify_current_url_contains(self, url_fragment):
-        try:
-            WebDriverWait(self.driver, self.timeout).until(
-                EC.url_contains(url_fragment))
-        except TimeoutException:
-            self.attach_screenshot(f"Текущий URL не содержит '{url_fragment}'")
-            raise AssertionError(f"Текущий URL не содержит '{url_fragment}'")
